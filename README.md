@@ -1,2 +1,2 @@
-# jekyll_demo
-blog
+# my document of learning
+
