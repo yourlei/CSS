@@ -20,7 +20,7 @@
 		复到本次提交前的状态，或者理解为将HEAD指针向前移动到某个commit对象上;
 
 - 解决方法： 先找到想要回退到的那个commit对象的SHA，再执行命令 git reset -hard commit-SHA
-	    -- git reflog 
+	  -- git reflog 
 		-- git reset --hard commit-SHA
 		 
 

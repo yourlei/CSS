@@ -28,13 +28,14 @@
  (4) 删除索引
  	# db.collection.dropIndex('IndexName')
 
-一、关于索引
+一、索引的属性
 1、创建索引的命令： db.collection.ensureIndex({key: value}, {name: indexName, unique: false/true})
 
 - name属性：设置索引的名字
 - unique：唯一性，即设置后该字段的记录不可以有重复，如：
   --  db.collection.ensureIndex({x: 1, y: 1}, {name: "normal", unique: true});
   --  db.collection.insert({x: 1, y: 2}); //该条记录只能插入一次，如果重复插入该条记录，则会报错
+- sparse属性： 当创建的索引字段不存在时，不会创建该索引
 
 
 二、命令行下通过for插入数据
@@ -54,8 +55,60 @@
 -- db.user.find({score: {$lt: 50}}).sort({socre: 1});
 -- db.user.find({score: {$lt: 50}}).sort({socre: -1});
 
+-- $exists查找包含该字段的记录
+-- db.user.find({score: {$exists: ture}});
+
 四、删除数据-remvoe
 直接调用remove方法，不添加参数时，会删除表中全部数据，添加参数后，会按参数查找表中数据，并删除匹配的记录
 
 - 删除user表中数据
 -- db.user.remove();
+
+四、地理位置索引
+- 以表localtion为例、
+- 地理位置的表示方法为经纬度，经度：[-180,180] 纬度： [-90,90]
+- 创建方法
+-- db.localtion.ensureIndex({key: '2d'})
+
+- 插入数据
+--  db.localtion.insert({"w": [20, 80]});
+
+- 查找方式
+-- $near方式
+-- db.localtion.find({w: {$near: [1, 20], $maxDistance: 100}});
+--- $near查找默认返回100条最接近的记录，可用$maxDistance限定距离范围
+
+-- $geowithin :该方式可查询某个形状内的点
+
+--- 有三种形状 矩形 $box：[[x1,y1], [x2,y2]] 
+							圆形 $center: [[x1,y1], r]
+							多边形 $polygon: [[x1,y1], [x2,y2], [x3,y3]]
+
+-- db.localtion.find({w: {$within: {$box: [[0,0], [10,10]]}}});
+-- db.localtion.find({w: {$within: {$center: [[0, 0], 5]}}});
+-- db.localtion.find({w: {$within: {$polygon: [[1, 2], [5, 3], [10, 100]]}}});
+
+2015-08-18
+
+-常用命令介绍：
+--- db.stats(): 查看数据库状态，输出datasize，collection、indexsize等信息
+--- db.serverStatus().mem: 查看数据库使用内存的信息
+
+- 文档
+--内嵌文档：即将一个文档作为键的值
+如：
+{
+		"name" : "jack",
+	  "address" : 
+	  {
+			"street" : "256 park street",
+			"city" : "BJ",
+			"state" : "BJ"
+		}
+
+}
+将这个文档插入person集合中后，我们可以用address.city这种方式引用city字段，js中这是
+很常见的引用对象属性的方式;
+
+--- db.person.find({'address.city': 'BJ'});
+上面这条命令可以查找address中 city 为 BJ 的记录;
